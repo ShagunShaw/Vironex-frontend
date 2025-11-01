@@ -49,23 +49,23 @@ const Subscriptions = () => {
       // Fetch subscribed channels using the user's ID
       const response = await axiosAuth.get(`/subscriptions/getSubscriptions`);    // the actual route has been changed here
       
-      //console.log('Subscribed channels response:', response.data);
-      
       if (response.data.success) {
-        const { data } = response.data;
+        const data = response.data.data;
         
         // Extract channels from the response according to the backend structure
         // The backend returns subscribedChannels array with channelDetails inside each item
-        const channels = data.subscribedChannels?.map(subscription => ({
-          _id: subscription.channelDetails._id,
-          username: subscription.channelDetails.username,
-          fullName: subscription.channelDetails.fullName,
-          avatar: subscription.channelDetails.avatar,
-          subscribersCount: subscription.channelDetails.subscriberCount,
+        const channels = data?.map(subscription => ({
+          _id: subscription.channel._id,
+          username: subscription.channel.username,
+          fullName: subscription.channel.fullName,
+          avatar: subscription.channel.avatar,
+          coverImage: subscription.channel.coverImage,
+          // Use subscribersCount from the channel object returned by the backend if available
+          subscribersCount: subscription.subscribersCount || 0,
           // Add subscription ID for unsubscribe functionality
           subscriptionId: subscription._id
         })) || [];
-        
+
         setSubscribedChannels(channels);
         
         // Update pagination based on the controller response
@@ -99,7 +99,7 @@ const Subscriptions = () => {
     } else if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}K subscribers`;
     } else {
-      return `${count} subscribers`;
+      return (count == 0 || count == 1) ? `${count} subscriber` : `${count} subscribers`;
     }
   };
   
@@ -116,18 +116,11 @@ const Subscriptions = () => {
     }
     
     try {
-      // Show confirmation dialog
-      if (!window.confirm(`Unsubscribe from ${channelName}?`)) {
-        return;
-      }
-      
+
       // Show loading state for this specific channel
       setUnsubscribingIds(prev => [...prev, channelId]);
       
-      // Make the API call to toggle subscription (which will unsubscribe in this case)
-      // Based on the controller code, this endpoint toggles subscription status
-      const response = await axios.post(`${server}/subscriptions/toggleSubscription/${channelId}`);
-      //console.log('Unsubscribe response:', response.data);
+      const response = await axiosAuth.post(`/subscriptions/toggleSubscription/${channelId}`);
       
       // Check if unsubscribe was successful
       if (response.data.success) {

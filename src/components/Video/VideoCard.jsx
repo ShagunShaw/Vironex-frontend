@@ -46,22 +46,27 @@ const VideoCard = ({ video }) => {
       
       try {
         setIsLoading(true);
-        const username = ownerInfo.username;
+
+        const userId = ownerInfo;
         
-        if (!username) {
-          throw new Error("Username not available in video owner details");
+        if (!userId) {
+          throw new Error("User ID not available in video owner details");
         }
+
+        const userDetails = await axios.get(`${server}/users/${userId}`);
+        const response = await axios.get(`${server}/users/channel/${userDetails.data.data.username}`);
         
-        const response = await axios.get(`${server}/users/channel/${username}`);
         setChannelDetails(response.data.data);
-      } catch (err) {
+      } 
+      catch (err) {
         console.error('Error fetching channel details:', err);
         setError('Could not load channel information');
         
         setChannelDetails({
           isVerified: ownerInfo.isVerified || false
         });
-      } finally {
+      } 
+      finally {
         setIsLoading(false);
       }
     };
@@ -137,8 +142,8 @@ const VideoCard = ({ video }) => {
         >
           {ownerInfo && (
             <img
-              src={ownerInfo.avatar}
-              alt={ownerInfo.username}
+              src={channelDetails?.avatar}
+              alt={channelDetails?.username}
               className="w-9 h-9 rounded-full object-cover"
             />
           )}
@@ -154,9 +159,9 @@ const VideoCard = ({ video }) => {
             className="flex items-center text-gray-400 text-sm"
             onClick={handleChannelClick}
           >
-            {ownerInfo?.fullName}
-            {channelDetails?.isVerified && (
-              <FaCheckCircle className="ml-1 text-gray-400 text-xs" />
+            {channelDetails?.fullName}
+            {true && (
+              <FaCheckCircle className="ml-1 text-blue-500 text-xs" />
             )}
           </div>
           

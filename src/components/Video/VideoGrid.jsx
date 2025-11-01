@@ -52,15 +52,11 @@ const serializedParams = JSON.stringify(params);
         // Always get a fresh axios instance with the latest token
         let response;
         try {
-          // Get a fresh axios instance with the current token
-         // const freshAxiosAuth = axiosAuth();
           
           // Use the fresh instance for the request
-          response = await axiosAuth.get(`${endpoint}/get-all-videos`, {
-            params: { ...params, limit, page: 1, sortBy: params.sortBy || 'createdAt', sortType: params.sortType || 'desc' },
-          });
-          console.log("Request successful using fresh axiosAuth instance");
-        } catch (authError) {
+          response = await axiosAuth.get(`${endpoint}/get-all-videos?${queryParams}`);
+        } 
+        catch (authError) {
           console.warn("axiosAuth request failed, falling back to manual token handling", authError);
           
           // Fallback to direct axios with manual token if axiosAuth fails
@@ -73,10 +69,9 @@ const serializedParams = JSON.stringify(params);
           });
         }
         
-        //console.log("API Response:", response.data);
-        
 
         const responseData = response.data.data;
+
         setVideos(responseData.videos || []);
         setPagination(responseData.pagination || {});
         setIsLoading(false);
@@ -147,7 +142,7 @@ const serializedParams = JSON.stringify(params);
       
 
       {!isLoading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
           {videos.length > 0 ? (
             videos.map(video => (
               <VideoCard key={video._id} video={video} />

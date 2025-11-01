@@ -52,40 +52,11 @@ const HomePage = () => {
   return (
     <div className="px-4 py-6">
       
-      
-      {/* Trending Videos - Based on views as per controller */}
-      <VideoGrid 
-        title="Trending Videos" 
-        endpoint="/videos" 
-        params={{ 
-          sortBy: 'views', 
-          sortType: 'desc' 
-        }} 
-        limit={8} 
-      />
-      
       {/* Recent Uploads - Based on creation date as per controller */}
       <VideoGrid 
-        title="Recent Uploads" 
+        title={<span className="text-2xl font-bold">Recent Uploads</span>} 
         endpoint="/videos" 
-        params={{ 
-          sortBy: 'createdAt', 
-          sortType: 'desc' 
-        }} 
-        limit={8} 
-      />
-      
-      {/* You might also like - We don't have specific recommended filter in controller */}
-      {/* Using a mix of views and recency as a substitute */}
-      <VideoGrid 
-        title="Recommended for You" 
-        endpoint="/videos" 
-        params={{ 
-          sortBy: 'views',
-          sortType: 'desc'
-          // The controller doesn't have a 'recommended' parameter 
-          // but we could add user-specific logic in the future
-        }} 
+        params={{ sortBy: 'createdAt', sortType: 'desc' }} 
         limit={8} 
       />
     </div>

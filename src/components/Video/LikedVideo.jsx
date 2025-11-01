@@ -18,6 +18,7 @@ const LikedVideo = () => {
 
         // 1. Get the main data object which contains 'likedVideos' and 'pagination'
         const responseData = response.data.data; 
+        console.log('Fetched liked videos data:', responseData);
 
         // 2. Get the array of like objects (which contain videoDetails)
         const likesArray = responseData.likedVideos || [];
