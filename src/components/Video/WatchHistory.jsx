@@ -31,7 +31,7 @@ const WatchHistory = () => {
       //const freshAxios = getAxiosAuth();
       
       const response = await axiosAuth.get('/users/watch-history');
-      
+
       // API returns array of video objects in the watch history
       const videos = response.data.data || [];
       

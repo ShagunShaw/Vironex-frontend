@@ -89,7 +89,7 @@ const Sidebar = () => {
   }, []);
 
   const mainMenuItems = [
-    { icon: <FaHome className="text-xl" />, label: 'Home', path: '/home' },
+    { icon: <FaHome className="text-xl" />, label: 'Home', path: '/' },
     { icon: <FaFire className="text-xl" />, label: 'Trending', path: '/home?sort=trending' },
     { icon: <FaPlay className="text-xl" />, label: 'Subscriptions', path: '/subscriptions' },
   ];
@@ -99,7 +99,7 @@ const Sidebar = () => {
     { icon: <FaVideo className="text-xl" />, label: 'Your Videos', path: `/channel/${userProfileData?.username}` },
     { icon: <FaHistory className="text-xl" />, label: 'History', path: '/watch-history' },
     { icon: <FaThumbsUp className="text-xl" />, label: 'Liked Videos', path: '/liked-videos' },
-    { icon: <FaClock className="text-xl" />, label: 'Watch later', path: '/' },
+    { icon: <FaClock className="text-xl" />, label: 'Watch later', path: '/watch-later' },
     { icon: <FaPlay className="text-xl" />, label: 'Playlists', path: '/playlists' }
   ];
 

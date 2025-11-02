@@ -343,7 +343,7 @@ const VideoPlayer = () => {
             
             <div className="flex flex-wrap items-center justify-between mb-4">
               <div className="text-gray-400 text-sm">
-                {formatViewCount(video.views)}
+                {formatViewCount(Math.ceil(video.views / 2))}
                 <span className="mx-1">•</span>
                 {formatDate(video.createdAt)}
               </div>

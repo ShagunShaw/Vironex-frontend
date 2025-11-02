@@ -47,7 +47,8 @@ const VideoCard = ({ video }) => {
       try {
         setIsLoading(true);
 
-        const userId = ownerInfo;
+        // const userId = ownerInfo;
+        const userId = (typeof ownerInfo === "object") ? ownerInfo._id : ownerInfo;
         
         if (!userId) {
           throw new Error("User ID not available in video owner details");
@@ -166,7 +167,7 @@ const VideoCard = ({ video }) => {
           </div>
           
           <div className="text-gray-400 text-sm">
-            <span>{formatViewCount(video.views || 0)}</span>
+            <span>{formatViewCount(Math.ceil(video.views / 2) || 0)}</span>
             <span className="mx-1">•</span>
             <span>{getTimeAgo(video.createdAt)}</span>
           </div>

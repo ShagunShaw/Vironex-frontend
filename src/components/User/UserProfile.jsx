@@ -167,7 +167,9 @@ const UserProfile = () => {
       
       {/* Channel Videos */}
       <div className="px-4 mt-4">
-        <h2 className="text-xl font-bold mb-4">Your Videos</h2>
+        <h2 className="text-xl font-bold mb-4">
+            {username === channelData.username ? "Your Videos" : "Uploaded Videos"}
+        </h2>
         <VideoGrid 
           endpoint={`/videos`} 
           params={{ userId: channelData._id }}
