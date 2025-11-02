@@ -5,12 +5,13 @@ import { refreshAccessToken, isTokenExpired } from '../../utils/tokenUtils';
 import { server } from '../../constants';
 import VideoCard from './VideoCard';
 
-const VideoGrid = ({ title, endpoint, params = {}, limit = 12 }) => {
+const VideoGrid = ({ title, endpoint, params = {}, limit = 12, source = "home" }) => {
   const [videos, setVideos] = useState([]);
   const [pagination, setPagination] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-const serializedParams = JSON.stringify(params);
+  const serializedParams = JSON.stringify(params);
+
   useEffect(() => {
     const fetchVideos = async () => {
       setIsLoading(true);
@@ -46,34 +47,58 @@ const serializedParams = JSON.stringify(params);
           sortType: params.sortType || 'desc'
         }).toString();
         
-        // console.log(`Making request to: ${endpoint}?${queryParams}`);
-        // console.log(`With auth token: Bearer ${accessToken.substring(0, 15)}...`);
         
         // Always get a fresh axios instance with the latest token
         let response;
         try {
-          
-          // Use the fresh instance for the request
-          response = await axiosAuth.get(`${endpoint}/get-all-videos?${queryParams}`);
+          if(source === 'channel') {
+            response = await axiosAuth.get(`${endpoint}/get-videos-of-user/${params.userId}?${queryParams}`);
+
+            const responseData = response.data.data;
+
+            setVideos(responseData || []);
+            setPagination(responseData.pagination || {});
+          } else {
+            response = await axiosAuth.get(`${endpoint}/get-all-videos?${queryParams}`);
+
+            const responseData = response.data.data;
+
+            setVideos(responseData.videos || []);
+            setPagination(responseData.pagination || {});
+          }
         } 
         catch (authError) {
           console.warn("axiosAuth request failed, falling back to manual token handling", authError);
           
           // Fallback to direct axios with manual token if axiosAuth fails
-          response = await axios.get(`${server}${endpoint}/get-all-videos?${queryParams}`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            withCredentials: true // Enable cookies for potential refresh token
-          });
+          if(source === 'channel') {
+            response = await axios.get(`${server}${endpoint}/get-videos-of-user/${params.userId}?${queryParams}`, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              }
+            });
+
+            const responseData = response.data.data;
+
+            setVideos(responseData || []);
+            setPagination(responseData.pagination || {});
+          } else {
+            response = await axios.get(`${server}${endpoint}/get-all-videos?${queryParams}`, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              withCredentials: true // Enable cookies for potential refresh token
+            });
+
+            const responseData = response.data.data;
+
+            setVideos(responseData.videos || []);
+            setPagination(responseData.pagination || {});
+          }
+          
         }
         
-
-        const responseData = response.data.data;
-
-        setVideos(responseData.videos || []);
-        setPagination(responseData.pagination || {});
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching videos:', err);
@@ -89,9 +114,7 @@ const serializedParams = JSON.stringify(params);
             const refreshSuccess = await refreshAccessToken();
             
             if (refreshSuccess) {
-             // console.log("Token refreshed successfully, retrying request");
-              // Retry the original request with the new token
-              fetchVideos(); // Call this function again to retry
+              fetchVideos(); 
               return;
             } else {
               console.error("Token refresh failed");
@@ -117,7 +140,7 @@ const serializedParams = JSON.stringify(params);
     };
     
     fetchVideos();
-  }, [endpoint, limit, serializedParams]);
+  }, [endpoint, limit, serializedParams, source]);
 
   return (
     <div className="mb-8">
@@ -149,7 +172,7 @@ const serializedParams = JSON.stringify(params);
             ))
           ) : (
             <div className="text-gray-500 col-span-full text-center py-8">
-              No videos found
+              No videos uploaded
             </div>
           )}
         </div>

@@ -8,11 +8,12 @@ import { useChannelData } from "../../custom-hooks/UseChannelData"; // Import th
 import VideoGrid from '../Video/VideoGrid';
 import { FaCheckCircle, FaSignOutAlt } from 'react-icons/fa';
 import { useLogout } from '../../utils/logoutHelper';
+import { useLocation } from 'react-router-dom';
 
 const UserProfile = () => {
-  const { username } = useParams();
+  const username = useLocation().state?.loggedInUser || useParams().username;
   const navigate = useNavigate();
-  const { channelData, isLoading, error } = useChannelData(username);
+  const { channelData, isLoading, error } = useChannelData(useParams().username);
   const handleLogout = useLogout();
 
   // State specific to user interaction on this page
@@ -147,8 +148,13 @@ const UserProfile = () => {
             {username === channelData.username && (
               <button
                 onClick={() => {
+                  localStorage.removeItem('accessToken');
+                  localStorage.removeItem('refreshToken');
                   handleLogout();
-                  navigate('/login');
+                  navigate('/');
+                  setTimeout(() => {
+                    window.alert('You have logged out successfully.');
+                  }, 300);
                 }}
                 className="px-4 py-2 rounded-full flex items-center gap-2 bg-gray-700 hover:bg-gray-600 transition-colors"
               >
@@ -161,13 +167,18 @@ const UserProfile = () => {
       
       {/* Channel Videos */}
       <div className="px-4 mt-4">
-        <h2 className="text-xl font-bold mb-4">Videos</h2>
+        <h2 className="text-xl font-bold mb-4">Your Videos</h2>
         <VideoGrid 
           endpoint={`/videos`} 
           params={{ userId: channelData._id }}
           limit={12}
+          source="channel"
         />
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#0f0f0f] text-gray-400 px-4 py-6 mt-8 text-center">
+      </footer>
     </div>
   );
 };

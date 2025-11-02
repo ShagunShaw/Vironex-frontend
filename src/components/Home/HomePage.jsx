@@ -58,6 +58,7 @@ const HomePage = () => {
         endpoint="/videos" 
         params={{ sortBy: 'createdAt', sortType: 'desc' }} 
         limit={8} 
+        source="home"
       />
     </div>
   );

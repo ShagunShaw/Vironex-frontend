@@ -21,11 +21,23 @@ const Header = () => {
   
   //console.log("Auth Status:", { isLoggedIn, userData });
   
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);      
+      const response = await axiosAuth.get(`${server}/users/channelName/${searchQuery.trim()}`);
+
+      if(response.data.success)
+      {
+        navigate(`/channel/${response.data.data.username}`, {
+          state: {
+            loggedInUser: userProfileData.username 
+          }
+        });
+      }
+      
     }
+
+    setSearchQuery('');
   };
 
   const handleUpload = () => {
@@ -104,6 +116,7 @@ const Header = () => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     if (isLoggedIn) {
       getAvatar();
@@ -113,7 +126,9 @@ const Header = () => {
   const toggleSidebar = () => {
     dispatch(toggleSideBar());
     sessionStorage.setItem("sidebarOpen", JSON.stringify(!sidebarOpen));
-  };  return (
+  };  
+  
+  return (
     <header className="fixed top-0 left-0 w-full bg-[#0f0f0f] text-white z-10 shadow-md">
       <div className="flex items-center justify-between px-4 py-2 h-14">
         {/* Left section: Logo and sidebar toggle */}
@@ -144,7 +159,7 @@ const Header = () => {
             <div className="relative flex flex-1">
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search by Channel Name"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full py-2 px-4 rounded-l-full border border-[#303030] bg-[#121212] focus:border-blue-500 focus:outline-none"
@@ -240,7 +255,7 @@ const Header = () => {
           <div className="relative flex flex-1">
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search by Channel Name"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full py-2 px-4 rounded-l-full border border-[#303030] bg-[#121212] focus:border-blue-500 focus:outline-none"

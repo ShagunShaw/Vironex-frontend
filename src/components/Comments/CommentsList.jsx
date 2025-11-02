@@ -148,7 +148,7 @@ const CommentsList = ({ videoId }) => {
       {/* Error message */}
       {error && (
         <div className="text-red-500 text-center py-4">
-          {error}
+          No comments in this video. Be the first to comment!
         </div>
       )}
       

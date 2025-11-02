@@ -1,5 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { server } from '../../constants';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleSideBar } from '../../redux/sideBar';
 import {
@@ -29,6 +32,9 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const isOpen = useSelector(state => state.sideBar.status);
   const { status: isLoggedIn } = useSelector(state => state.auth);
+  const [userProfileData, setUserProfileData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const closeSidebar = () => {
     if (window.innerWidth < 1024) {
@@ -40,6 +46,47 @@ const Sidebar = () => {
     return location.pathname === path ? 'bg-[#272727]' : '';
   };
 
+  const getUsername = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      console.warn('No access token found, cannot fetch avatar');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const response = await axios.get(`${server}/users/current-user`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        withCredentials: true
+      });
+      
+      //console.log('User data response:', response.data);
+      
+      if (response.data?.data) {
+        setUserProfileData(response.data.data);
+      } 
+      else {
+        console.warn('No user data found in response');
+        setUserProfileData(null);
+      }
+    } 
+    catch (err) {
+      console.error('Error fetching username:', err);
+      setUserProfileData(null);
+    } 
+    finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getUsername();
+  }, []);
 
   const mainMenuItems = [
     { icon: <FaHome className="text-xl" />, label: 'Home', path: '/home' },
@@ -49,7 +96,7 @@ const Sidebar = () => {
 
 
   const libraryItems = [
-    { icon: <FaVideo className="text-xl" />, label: 'Your Videos', path: '/your-videos' },
+    { icon: <FaVideo className="text-xl" />, label: 'Your Videos', path: `/channel/${userProfileData?.username}` },
     { icon: <FaHistory className="text-xl" />, label: 'History', path: '/watch-history' },
     { icon: <FaThumbsUp className="text-xl" />, label: 'Liked Videos', path: '/liked-videos' },
     { icon: <FaClock className="text-xl" />, label: 'Watch later', path: '/' },

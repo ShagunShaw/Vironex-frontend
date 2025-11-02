@@ -142,8 +142,8 @@ const VideoCard = ({ video }) => {
         >
           {ownerInfo && (
             <img
-              src={channelDetails?.avatar}
-              alt={channelDetails?.username}
+              src={channelDetails?.avatar  || video.ownerDetails?.avatar }
+              alt={channelDetails?.username || video.ownerDetails?.username}
               className="w-9 h-9 rounded-full object-cover"
             />
           )}
