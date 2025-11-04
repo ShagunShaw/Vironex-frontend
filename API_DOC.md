@@ -1,11 +1,10 @@
-# ViroNex Backend API Documentation
+# ClipHive Backend API Documentation
 
 ---
 
 ## 🔗 Base Configuration
 
 ```
-Base URL:https://vironex.onrender.com
 Environment: Development
 Content-Type: application/json (default)
 Content-Type: multipart/form-data (file uploads)
@@ -525,10 +524,10 @@ GET /api/v1/subscriptions/u/:subscriberId?page=1&limit=10
 
 ## 📞 Contact Information
 
-**Backend Developer**: Shaswat Pathak
-**Repository**: https://github.com/ethyashpathak/ViroNex
+**Backend Developer**: Shagun Shaw
+**Repository**: https://github.com/ShagunShaw/ClipHive-Backend
 **Issues**: Report bugs via GitHub issues
 
 ---
 
-*Last Updated: October 2025*
+*Last Updated: November 2025*

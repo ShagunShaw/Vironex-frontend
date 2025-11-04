@@ -1,8 +1,8 @@
-# ViroNex - Video Streaming Platform
+# ClipHive - Video Streaming Platform
 
-<img src="public/video%20streamer.png" alt="ViroNex Logo" width="200"/>
+<img src="public/video%20streamer.png" alt="ClipHive Logo" width="200"/>
 
-ViroNex is a feature-rich video streaming platform built with React and modern web technologies. It allows users to watch, upload, like, and share videos, subscribe to channels, and engage with content through comments.
+ClipHive is a feature-rich video streaming platform built with React and modern web technologies. It allows users to watch, upload, like, and share videos, subscribe to channels, and engage with content through comments. 
 
 ## 🌟 Features
 
@@ -37,8 +37,8 @@ ViroNex is a feature-rich video streaming platform built with React and modern w
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/vironex-frontend.git
-   cd vironex-frontend
+   git clone https://github.com/yourusername/cliphive-frontend.git
+   cd cliphive-frontend
    ```
 
 2. Install dependencies:
@@ -85,7 +85,7 @@ src/
 
 ## 🔐 Authentication Flow
 
-ViroNex uses JWT authentication with access and refresh tokens:
+ClipHive uses JWT authentication with access and refresh tokens:
 
 1. **Login/Signup**: User receives access and refresh tokens
 2. **API Requests**: Access token included in Authorization header
@@ -113,7 +113,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## � API Integration
 
-ViroNex communicates with a backend API for data management. The API endpoints are documented in `API_DOC.md` and include:
+ClipHive communicates with a backend API for data management. The API endpoints are documented in `API_DOC.md` and include:
 
 - User authentication and management
 - Video uploads, retrieval, and management
