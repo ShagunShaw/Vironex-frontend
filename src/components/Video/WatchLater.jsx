@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { axiosAuth} from '../../utils/axiosConfig';
 import { server } from '../../constants';
 import VideoCard from './VideoCard';
-import { FaHistory, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
+import { FaBookmark, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 
-const WatchHistory = () => {
+const WatchLater = () => {
   const navigate = useNavigate();
-  const [historyVideos, setHistoryVideos] = useState([]);
+  const [laterVideos, setLaterVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -15,14 +15,14 @@ const WatchHistory = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setError('Please log in to view your watch history');
+      setError('Please log in to view your watch later');
       return;
     }
 
-    fetchWatchHistory();
+    fetchWatchLater();
   }, [isAuthenticated]);
 
-  const fetchWatchHistory = async () => {
+  const fetchWatchLater = async () => {
     setIsLoading(true);
     setError('');
 
@@ -30,64 +30,61 @@ const WatchHistory = () => {
       // Get a fresh axios instance with the latest token
       //const freshAxios = getAxiosAuth();
       
-      const response = await axiosAuth.get('/users/watch-history');
+      const response = await axiosAuth.get('/users/watch-later');
 
       // API returns array of video objects in the watch history
       const videos = response.data.data || [];
       
       // Sort by most recently watched (assuming there's a lastWatched or timestamp field)
       // If not provided by API, the array should already be in the correct order
-      setHistoryVideos(videos);
+      setLaterVideos(videos);
       
     } catch (err) {
-      console.error('Error fetching watch history:', err);
+      console.error('Error fetching watch later:', err);
       
       if (err.response?.status === 401) {
         setError('Your session has expired. Please log in again.');
         setIsAuthenticated(false);
         // Could redirect to login page here
       } else {
-        setError('Could not load watch history. Please try again later.');
+        setError('Could not load watch later list. Please try again later.');
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Function to clear watch history
-  const clearWatchHistory = async () => {
-    if (window.confirm('Are you sure you want to clear your entire watch history? This action cannot be undone.')) {
+  // Function to clear watch later
+  const clearWatchLater = async () => {
+    if (window.confirm('Are you sure you want to clear your entire watch later list? This action cannot be undone.')) {
       setIsClearing(true);
       
       try {
-        await axiosAuth.delete('/users/watch-history');       // where is this route 
-        //await freshAxios.delete('/users/watch-history');
+        await axiosAuth.delete('/users/watch-later');    
         
-        // Clear local state
-        setHistoryVideos([]);
+        setLaterVideos([]);
         
-        // Show success message or toast notification here
       } catch (err) {
-        console.error('Error clearing watch history:', err);
-        setError('Failed to clear watch history. Please try again.');
+        console.error('Error clearing watch later:', err);
+        setError('Failed to clear watch later list. Please try again.');
       } finally {
         setIsClearing(false);
       }
     }
   };
 
-  // Function to remove a single video from watch history
-  const removeFromHistory = async (videoId) => {
+  // Function to remove a single video from watch later
+  const removeFromWatchLater = async (videoId) => {
     try {
       //const freshAxios = getAxiosAuth();
-      await axiosAuth.delete(`/users/watch-history/${videoId}`);      // where is this route
+      await axiosAuth.delete(`/users/watch-later/${videoId}`);      // where is this route
 
       // Remove from local state
-      setHistoryVideos(prev => prev.filter(video => video._id !== videoId));
+      setLaterVideos(prev => prev.filter(video => video._id !== videoId));
       
       // Show success message or toast notification here
     } catch (err) {
-      console.error(`Error removing video ${videoId} from history:`, err);
+      console.error(`Error removing video ${videoId} from watch later list:`, err);
       // Show error message or toast notification here
     }
   };
@@ -96,13 +93,13 @@ const WatchHistory = () => {
     <div className="px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
-          <FaHistory className="text-[#ff3b5c] mr-2 text-xl" />
-          <h1 className="text-2xl font-bold">Watch History</h1>
+          <FaBookmark className="text-[#ff3b5c] mr-2 text-xl" />
+          <h1 className="text-2xl font-bold">Watch Later</h1>
         </div>
         
-        {historyVideos.length > 0 && (
+        {laterVideos.length > 0 && (
           <button
-            onClick={clearWatchHistory}
+            onClick={clearWatchLater}
             disabled={isClearing}
             className={`flex items-center px-4 py-2 rounded-full ${
               isClearing 
@@ -111,7 +108,7 @@ const WatchHistory = () => {
             } transition-colors`}
           >
             <FaTrash className="mr-2" />
-            {isClearing ? 'Clearing...' : 'Clear History'}
+            {isClearing ? 'Clearing...' : 'Clear List'}
           </button>
         )}
       </div>
@@ -122,7 +119,7 @@ const WatchHistory = () => {
           <FaExclamationTriangle className="text-yellow-500 text-4xl mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
           <p className="text-gray-300 mb-4">
-            You need to be logged in to view your watch history.
+            You need to be logged in to view your watch later list.
           </p>
           <button 
             className="bg-[#ff3b5c] hover:bg-[#e02d53] px-6 py-2 rounded-full transition-colors"
@@ -146,7 +143,7 @@ const WatchHistory = () => {
           <FaExclamationTriangle className="text-red-500 text-4xl mx-auto mb-4" />
           <p>{error}</p>
           <button 
-            onClick={fetchWatchHistory}
+            onClick={fetchWatchLater}
             className="mt-4 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
           >
             Try Again
@@ -157,17 +154,17 @@ const WatchHistory = () => {
       {/* Content Area */}
       {!isLoading && !error && isAuthenticated && (
         <>
-          {historyVideos.length > 0 ? (
+          {laterVideos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-              {historyVideos.map(video => (
+              {laterVideos.map(video => (
                 <div key={video._id} className="relative group">
                   <VideoCard video={video} />
                   
                   {/* Remove from history button - shows on hover */}
                   <button
-                    onClick={() => removeFromHistory(video._id)}
+                    onClick={() => removeFromWatchLater(video._id)}
                     className="absolute top-2 right-2 bg-black bg-opacity-70 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Remove from history"
+                    title="Remove from list"
                   >
                     <FaTrash className="text-red-500" />
                   </button>
@@ -176,9 +173,9 @@ const WatchHistory = () => {
             </div>
           ) : (
             <div className="text-gray-400 text-center py-16 bg-gray-800 rounded-lg">
-              <FaHistory className="text-5xl mx-auto mb-4 text-gray-500" />
-              <h2 className="text-xl font-semibold mb-2">No watch history yet</h2>
-              <p className="mb-6">Videos you watch will appear here</p>
+              <FaBookmark className="text-5xl mx-auto mb-4 text-gray-500" />
+              <h2 className="text-xl font-semibold mb-2">No saved videos yet</h2>
+              <p className="mb-6">Videos you save to watch later will appear here</p>
               <button 
                 onClick={() => navigate('/')}
                 className="bg-[#ff3b5c] hover:bg-[#e02d53] px-6 py-2 rounded-full transition-colors"
@@ -193,4 +190,4 @@ const WatchHistory = () => {
   );
 };
 
-export default WatchHistory;
+export default WatchLater;

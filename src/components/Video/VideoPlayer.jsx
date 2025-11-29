@@ -5,12 +5,14 @@ import { server } from '../../constants';
 import { FaThumbsUp, FaThumbsDown, FaShare, FaFlag, FaRegBookmark } from 'react-icons/fa';
 import VideoGrid from './VideoGrid';
 import CommentsList from '../Comments/CommentsList';
+import { axiosAuth } from '../../utils/axiosConfig';
 
 const VideoPlayer = () => {
   const { videoId } = useParams();
   const [video, setVideo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -18,6 +20,77 @@ const VideoPlayer = () => {
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [user, setUser] = useState({});         // For storing user data
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);         
+
+  const fetchUserPlaylists = async () => {
+  setLoadingPlaylists(true);
+
+  try {
+    const userRes = await axiosAuth.get(`${server}/users/current-user`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+
+    const userId = userRes.data.data._id;
+
+    const playlistRes = await axiosAuth.get(
+      `${server}/playlists/getAllPlaylistsOfUser/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+
+    setUserPlaylists(playlistRes.data.data || []);
+  } catch (err) {
+    console.error("Error loading playlists:", err);
+  }
+
+  setLoadingPlaylists(false);
+};
+
+  useEffect(() => {
+    if (showPlaylistModal) {
+      fetchUserPlaylists();
+    }
+  }, [showPlaylistModal]);
+
+
+  const toggleVideoInPlaylist = async (pl) => {
+  try {
+    const videoExists = pl.videos?.includes(videoId);
+
+    if (videoExists) {
+      await axiosAuth.patch(
+        `${server}/playlist/remove/${videoId}/${pl._id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+    } else {
+      await axiosAuth.patch(
+        `${server}/playlist/add/${videoId}/${pl._id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+    }
+
+    fetchUserPlaylists(); // Refresh list
+  } catch (err) {
+    console.error("Error adding/removing video:", err);
+  }
+};
 
   // Debug effect for authentication state
   useEffect(() => {
@@ -43,23 +116,33 @@ const VideoPlayer = () => {
           }
         });
         
-        // console.log('Full API response:', response);
-        // console.log('Video data from API:', response.data.data);
-        // console.log('Response structure:', {
-        //   responseData: response.data,
-        //   videoData: response.data.data, 
-        // });
-        
         // Check if the API response contains likes information
         const videoData = response.data.data;
         
-        // Log all available fields to see what we can use
-       // console.log('All video fields:', Object.keys(videoData));
+        const response2 = await axios.get(`${server}/likes/isVideoLiked/${videoId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
+
+        const response3 = await axios.get(`${server}/likes/getVideoLikes/${videoId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
+
+        const response4 = await axios.get(`${server}/users/isSaved/${videoId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        });
         
         // Store the video data directly
         setVideo(videoData);
-        setIsLiked(videoData.isLiked || false);
+        setIsLiked(response2.data.data.liked || false);
+        setLikeCount(response3.data.data || 0);
         setIsDisliked(videoData.isDisliked || false);
+        setIsSaved(response4.data.data || false);
         
         // Set subscription state if available in the API response
         if (videoData.owner) {
@@ -83,7 +166,6 @@ const VideoPlayer = () => {
             }
           });
           setUser(response4.data.data);
-
         } 
         else {
           console.warn('Video owner data missing in API response');
@@ -91,7 +173,6 @@ const VideoPlayer = () => {
         
         setIsLoading(false);
       } catch (err) {
-        //console.error('Error fetching video details:', err);
         setError('Could not load video. Please try again later.');
         setIsLoading(false);
       }
@@ -110,8 +191,6 @@ const VideoPlayer = () => {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
-      
-      //console.log('Like toggle API response:', response.data);
       
       // After like operation, fetch the updated video details to get current like count from server
       const videoResponse = await axios.get(`${server}/videos/get-video/${videoId}`, {
@@ -143,6 +222,35 @@ const VideoPlayer = () => {
 
     }
     console.log('Like hogya');
+  };
+
+  const handleSaveVideo = async () => {
+    try{
+      if(!isSaved)
+      {
+        await axios.post(`${server}/users/watch-later/${videoId}`, {}, 
+          {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          },
+        });
+
+        setIsSaved(true);
+      }
+      else
+      {
+        await axios.delete(`${server}/users/watch-later/${videoId}`, 
+          {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          },
+        });
+
+        setIsSaved(false);
+      }
+    } catch(err){
+      console.error('Error saving video to watch later:', err);
+    }
   };
   
   const handleSubscribe = async () => {
@@ -362,12 +470,17 @@ const VideoPlayer = () => {
                   <FaThumbsDown />
                 </button>
                 
-                <button className="flex items-center gap-1">
+                <button 
+                  className="flex items-center gap-1" 
+                >
                   <FaShare />
-                  <span>Share</span>
+                    <span>Share</span>
                 </button>
-                
-                <button className="flex items-center gap-1">
+
+                <button 
+                  className={`flex items-center gap-1 ${isSaved ? 'text-[#ff3b5c]' : 'text-white'}`}
+                  onClick={handleSaveVideo}
+                >
                   <FaRegBookmark />
                   <span>Save</span>
                 </button>
@@ -443,6 +556,50 @@ const VideoPlayer = () => {
           />
         </div>
       </div>
+      {showPlaylistModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-[#1f1f1f] p-6 rounded-xl w-80">
+      <h2 className="text-xl font-semibold mb-4 text-white">
+        Save to playlist
+      </h2>
+
+      {loadingPlaylists ? (
+        <p className="text-gray-400">Loading playlists...</p>
+      ) : userPlaylists.length === 0 ? (
+        <p className="text-gray-400">No playlists found.</p>
+      ) : (
+        <div className="flex flex-col gap-3 max-h-64 overflow-y-auto">
+          {userPlaylists.map((pl) => {
+            const containsVideo = pl.videos?.includes(videoId);
+
+            return (
+              <label
+                key={pl._id}
+                className="flex items-center gap-3 cursor-pointer text-white"
+              >
+                <input
+                  type="checkbox"
+                  checked={containsVideo}
+                  onChange={() => toggleVideoInPlaylist(pl)}
+                  className="w-5 h-5"
+                />
+                <span>{pl.name}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      <button
+        className="mt-4 w-full bg-[#ff3b5c] hover:bg-[#e23953] text-white py-2 rounded-lg transition"
+        onClick={() => setShowPlaylistModal(false)}
+      >
+        Done
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

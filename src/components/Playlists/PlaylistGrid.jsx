@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { axiosAuth } from '../../utils/axiosConfig';
 import { server } from '../../constants';
 import PlayListCard from './PlayListCard';
-import { axiosAuth } from '../../utils/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 const PlaylistGrid = () => {
+  const navigate=useNavigate();
   const [playlists, setPlaylists] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,7 +18,7 @@ const PlaylistGrid = () => {
       
       try {
         // Get the current user ID first
-        const userResponse = await axiosAuth.get(`/users/current-user`, {
+        const userResponse = await axiosAuth.get(`${server}/users/current-user`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`
           }
@@ -25,13 +27,17 @@ const PlaylistGrid = () => {
         const userId = userResponse.data.data._id;
         
         // Then fetch the user's playlists
-        const response = await axiosAuth.get(`/playlists/getAllPlaylistsOfUser/${userId}`, {
+        const res = await axiosAuth.get(`${server}/playlists/getAllPlaylistsOfUser/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`
           }
         });
         
-        setPlaylists(response.data.data || []);
+        const fetchedData = res.data.data;
+        
+        setPlaylists(fetchedData || []);
+        setPagination(fetchedData.pagination);
+
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching playlists:', err);
@@ -63,9 +69,9 @@ const PlaylistGrid = () => {
       
       {/* Playlists Grid */}
       {!isLoading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {playlists.length > 0 ? (
-            playlists.map(playlist => (
+            playlists.map((playlist) => (
               <PlayListCard key={playlist._id} playlist={playlist} />
             ))
           ) : (
@@ -75,6 +81,17 @@ const PlaylistGrid = () => {
           )}
         </div>
       )}
+      <button
+      onClick={() => navigate("/create-playlist")}
+      className="fixed bottom-6 right-6 bg-[#ff3b5c] hover:bg-[#ff1f49] hover:scale-105 active:scale-95
+                w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-[#ff3b5c]/40
+                text-white text-5xl font-bold transition transform leading-[56px]"
+    >
+      +
+    </button>
+
+      {/* Pagination debug (optional) */}
+      {/* {pagination && <pre>{JSON.stringify(pagination, null, 2)}</pre>} */}
     </div>
   );
 };

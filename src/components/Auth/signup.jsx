@@ -128,7 +128,7 @@ const Signup = () => {
     <div className="flex min-h-screen items-center justify-center bg-[#121218]">
       <div className="w-full max-w-md p-8 rounded-lg bg-[#1a1a24]">
         <div className="text-center mb-8">
-          <h1 className="text-[#ff3b5c] text-4xl font-bold">ViroNex</h1>
+          <h1 className="text-[#ff3b5c] text-4xl font-bold">ClipHive</h1>
           <p className="text-gray-400 mt-2">Create your account</p>
         </div>
 

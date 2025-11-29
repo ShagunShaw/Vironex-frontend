@@ -149,7 +149,7 @@ const Header = () => {
                 className="h-full w-auto object-contain"
               />
             </div>
-            <span className="text-xl font-bold">ViroNex</span>
+            <span className="text-xl font-bold">ClipHive</span>
           </div>
         </div>
 

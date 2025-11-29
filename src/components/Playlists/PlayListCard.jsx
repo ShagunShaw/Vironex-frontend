@@ -1,21 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const PlayListCard = ({ playlist }) => {
   const navigate = useNavigate();
+  const [thumbnail, setThumbnail] = useState("/video streamer.png");
 
   const handleClick = () => {
+    if (!playlist?._id) return;
     navigate(`/playlist/${playlist._id}`);
   };
 
-  // Get thumbnail from first video or use placeholder
-  const getThumbnail = () => {
-    if (playlist.videos && playlist.videos.length > 0 && playlist.videos[0].thumbnail) {
-      return playlist.videos[0].thumbnail;
+  useEffect(() => {
+    if (playlist?.thumbnail) {
+      setThumbnail(playlist.thumbnail);
+    } else {
+      setThumbnail("/video streamer.png");
     }
-    // Placeholder image - replace with your own placeholder image URL
-    return 'https://via.placeholder.com/480x270?text=No+Videos';
-  };
+  }, [playlist]);
 
   // Get video count
   const getVideoCount = () => {
@@ -25,31 +26,34 @@ const PlayListCard = ({ playlist }) => {
 
   return (
     <div 
-      className="cursor-pointer rounded-xl overflow-hidden bg-[#1f1f1f] hover:bg-[#2d2d2d] transition-colors"
+      className="cursor-pointer rounded-xl overflow-hidden bg-[#1f1f1f] hover:bg-[#2d2d2d] 
+               transition-colors max-w-[280px] mx-auto"
       onClick={handleClick}
     >
       {/* Playlist Thumbnail */}
       <div className="relative">
         <img
-          src={getThumbnail()}
-          alt={playlist.name}
-          className="w-full aspect-video object-cover"
+          src= {thumbnail}
+          alt={playlist?.name || "Playlist Thumbnail"}
+          className="w-full aspect-[6/3] object-cover"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+
+        <div className="flex items-center justify-center">
           <div className="text-white text-center">
-            <div className="text-4xl font-bold">{getVideoCount()}</div>
-            <div className="text-sm opacity-80">VIEW ALL</div>
+            <div className="text-3xl font-bold">{getVideoCount()}</div>
+            <div className="text-sm opacity-50">VIEW ALL</div>
           </div>
         </div>
       </div>
       
       {/* Playlist Info */}
       <div className="p-3">
-        <h3 className="text-white text-base font-medium line-clamp-1">
-          {playlist.name}
+        <h3 className="text-white text-[30px] font-medium line-clamp-1">
+          {playlist?.name || "Untitled Playlist"}
         </h3>
+
         {playlist.description && (
-          <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+          <p className="text-white text-[15px] font-medium line-clamp-1">
             {playlist.description}
           </p>
         )}
